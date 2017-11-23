@@ -1,0 +1,5 @@
+Vector Width,16,2,4,8
+Total Vector Instructions,28217,172515,99571,54127
+Vector Utilization,63.785794,75.742109,68.958582,65.434765
+Utilized vector lanes,287975,261333,274651,283343
+Total Vector Lanes,451472,345030,398284,433016

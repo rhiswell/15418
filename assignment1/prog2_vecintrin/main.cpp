@@ -237,12 +237,85 @@ void clampedExpSerial(float* values, int* exponents, float* output, int N) {
 }
 
 void clampedExpVector(float* values, int* exponents, float* output, int N) {
-  // TODO: Implement your vectorized version of clampedExpSerial here
+  __cmu418_vec_float x;
+  __cmu418_vec_int exp;
+  __cmu418_vec_float result;
+  // Constants
+  __cmu418_vec_int zero = _cmu418_vset_int(0);
+  __cmu418_vec_int ones = _cmu418_vset_int(1);
+  __cmu418_vec_float max = _cmu418_vset_float(9.999999f);
+  // Mask
+  __cmu418_mask maskAll, maskCompute, maskIsOverflow;
+  //__cmu418_mask maskAll, maskCompute;
 
-  for (int i=0; i<N; i+=VECTOR_WIDTH) {
+  int last_part_len = N % VECTOR_WIDTH;
+  int i;
+  for (i=0; i<N-last_part_len; i+=VECTOR_WIDTH) {
+    // All ones
+    maskAll = _cmu418_init_ones();
+    _cmu418_vload_float(x, values+i, maskAll);
+    _cmu418_vload_int(exp, exponents+i, maskAll);
+    _cmu418_vmove_float(result, x, maskAll);
 
+    // Case 0: Xi ^ 0 = 1
+    _cmu418_veq_int(maskCompute, exp, zero, maskAll);
+    _cmu418_vset_float(result, 1.f, maskCompute);
+
+    // Case 1: Figure out the common part
+    maskCompute = _cmu418_mask_not(maskCompute);
+    // for each element in vector:
+    while (_cmu418_cntbits(maskCompute)) {
+      //   exp--
+      _cmu418_vsub_int(exp, exp, ones, maskCompute);
+      //   if (exp > 0)
+      _cmu418_vgt_int(maskCompute, exp, zero, maskCompute);
+      //     result *= x
+      _cmu418_vmult_float(result, result, x, maskCompute);
+    }
+
+    // Case 2: if Yi > 9.999999f then set Yi = 9.999999f
+    maskIsOverflow = _cmu418_init_ones(0);
+    _cmu418_vgt_float(maskIsOverflow, result, max, maskAll);
+    _cmu418_vset_float(result, 9.999999f, maskIsOverflow);
+    //_cmu418_vgt_float(maskCompute, result, max, maskAll);
+    //_cmu418_vset_float(result, 9.999999f, maskCompute);
+
+    _cmu418_vstore_float(output+i, result, maskAll);
   }
 
+  // Unroll last part of the loop
+  if (last_part_len) {
+    maskAll = _cmu418_init_ones(last_part_len);
+    _cmu418_vload_float(x, values+i, maskAll);
+    _cmu418_vload_int(exp, exponents+i, maskAll);
+    _cmu418_vmove_float(result, x, maskAll);
+
+    // Case 0: Xi ^ 0 = 1
+    _cmu418_veq_int(maskCompute, exp, zero, maskAll);
+    _cmu418_vset_float(result, 1.f, maskCompute);
+
+    // Case 1: Figure out the common part
+    maskCompute = _cmu418_mask_not(maskCompute);
+    maskCompute = _cmu418_mask_and(maskCompute, maskAll);
+    // for each element in vector:
+    while (_cmu418_cntbits(maskCompute)) {
+      //   exp--
+      _cmu418_vsub_int(exp, exp, ones, maskCompute);
+      //   if (exp > 0)
+      _cmu418_vgt_int(maskCompute, exp, zero, maskCompute);
+      //     result *= x
+      _cmu418_vmult_float(result, result, x, maskCompute);
+    }
+
+    // Case 2: if Yi > 9.999999f then set Yi = 9.999999f
+    maskIsOverflow = _cmu418_init_ones(0);
+    _cmu418_vgt_float(maskIsOverflow, result, max, maskAll);
+    _cmu418_vset_float(result, 9.999999f, maskIsOverflow);
+    //_cmu418_vgt_float(maskCompute, result, max, maskAll);
+    //_cmu418_vset_float(result, 9.999999f, maskCompute);
+
+    _cmu418_vstore_float(output+i, result, maskAll);
+  }
 }
 
 float arraySumSerial(float* values, int N) {
@@ -257,12 +330,27 @@ float arraySumSerial(float* values, int N) {
 // Assume N is a power VECTOR_WIDTH == 0
 // Assume VECTOR_WIDTH is a power of 2
 float arraySumVector(float* values, int N) {
-  // TODO: Implement your vectorized version of arraySumSerial here
+  __cmu418_vec_float x;
+  __cmu418_mask maskAll = _cmu418_init_ones();
+  __cmu418_mask maskResult = _cmu418_init_ones(1);
 
+  int cnt = (int) log2(VECTOR_WIDTH);
+  float buf, result=0;
   for (int i=0; i<N; i+=VECTOR_WIDTH) {
+    _cmu418_vload_float(x, values+i, maskAll);
 
+    // hadd & interleave
+    int iter = cnt;
+    while (iter) {
+      _cmu418_hadd_float(x, x);
+      _cmu418_interleave_float(x, x);
+      iter--;
+    }
+
+    _cmu418_vstore_float(&buf, x, maskResult);
+    result += buf;
   }
 
-  return 0.0;
+  return result;
 }
 
