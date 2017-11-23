@@ -11,9 +11,9 @@
 
 Intel Core i7-6700 CPU with hyper-thread on => 8 logical cores
 
-![view1_speedup](/home/rh/Workspace/cmu15418/assignment1/prog1_mandelbrot_threads/view1_speedup.png)
+![view1_speedup](./prog1_mandelbrot_threads/view1_speedup.png)
 
-![view2_speedup](/home/rh/Workspace/cmu15418/assignment1/prog1_mandelbrot_threads/view2_speedup.png)
+![view2_speedup](./prog1_mandelbrot_threads/view2_speedup.png)
 
 由图，线程数小于 12 时，speedup 随线程数线性增长。当线程数大于 12 时，speedup 趋于 8，即趋于 CPU 的核心数。
 
@@ -145,7 +145,7 @@ float arraySumVector(float *valus, int N)
 
 #### `./myexp -s 10000` with VECTOR_WIDTH in [2, 4, 8, 16]
 
-![vector_utilization](/home/rh/Workspace/cmu15418/assignment1/prog2_vecintrin/vector_utilization.png)
+![vector_utilization](./prog2_vecintrin/vector_utilization.png)
 
 向量寄存器的利用率随着其长度递减。
 
