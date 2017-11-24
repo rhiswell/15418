@@ -5,6 +5,9 @@
 #include "CycleTimer.h"
 #include "mandelbrot_ispc.h"
 
+extern int ifCallCnt;
+extern int ifTrueCnt;
+
 extern void mandelbrotSerial(
     float x0, float y0, float x1, float y1,
     int width, int height,
@@ -138,6 +141,9 @@ int main(int argc, char** argv) {
         double endTime = CycleTimer::currentSeconds();
         minSerial = std::min(minSerial, endTime - startTime);
     }
+
+    //double ifTrueRate = 1.f * ifTrueCnt / ifCallCnt;
+    //printf("[if-true-rate from mandelbrotSerial]:\t\t[%.3f] \n", ifTrueRate);
 
     printf("[mandelbrot serial]:\t\t[%.3f] ms\n", minSerial * 1000);
     writePPMImage(output_serial, width, height, "mandelbrot-serial.ppm", maxIterations);

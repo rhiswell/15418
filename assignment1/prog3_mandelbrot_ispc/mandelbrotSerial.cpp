@@ -37,6 +37,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+int ifCallCnt = 0;
+int ifTrueCnt = 0;
 
 static inline int mandel(float c_re, float c_im, int count)
 {
@@ -44,8 +46,11 @@ static inline int mandel(float c_re, float c_im, int count)
     int i;
     for (i = 0; i < count; ++i) {
 
-        if (z_re * z_re + z_im * z_im > 4.f)
+        //ifCallCnt++;
+        if (z_re * z_re + z_im * z_im > 4.f) {
+        //    ifTrueCnt++;
             break;
+        }
 
         float new_re = z_re*z_re - z_im*z_im;
         float new_im = 2.f * z_re * z_im;

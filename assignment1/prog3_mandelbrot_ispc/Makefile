@@ -1,8 +1,10 @@
 CXX=g++ -m64
 CXXFLAGS=-I../common -Iobjs/ -O3 -Wall
 ISPC=ispc
-# note: change target to avx-x2 for AVX capable machines
-ISPCFLAGS=-O2 --target=sse4-x2 --arch=x86-64
+ISPCFLAGS=-O2 --target=sse4-i32x8 --arch=x86-64 --pic
+#ISPCFLAGS=-O2 --target=avx1-i32x4 --arch=x86-64 --pic
+#ISPCFLAGS=-O2 --target=avx1-i32x8 --arch=x86-64 --pic
+#ISPCFLAGS=-O2 --target=avx1-i32x16 --arch=x86-64 --pic
 
 APP_NAME=mandelbrot_ispc
 OBJDIR=objs
