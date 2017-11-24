@@ -22,7 +22,7 @@ case $1 in
     "speedup" )
         collect_speedup
         ;;
-    *)
+    * )
         echo unknown subcommand
         ;;
 esac

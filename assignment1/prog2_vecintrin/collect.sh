@@ -51,7 +51,7 @@ case $1 in
         done
         merge_stat
         ;;
-    *)
+    * )
         echo unknown subcommand
         ;;
 esac
