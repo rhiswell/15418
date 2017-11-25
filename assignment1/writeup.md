@@ -298,9 +298,11 @@ Speedup 分别为 7.46x 和 46.43x。
 
 > Compile and run saxpy. The program will report the performance of ISPC (without tasks) and ISPC (with tasks) implementations of saxpy. What speedup from using ISPC with tasks do you observe? Explain the performance of this program. Do you think it can be improved?
 
-TODO
+![](./prog5_saxpy/result_origin.png)
 
->Note that the total memory bandwidth consumed computation in `main.cpp` is `TOTAL_BYTES = 4 * N * sizeof(float);`. Even though `saxpy` loads one element from X, one element from Y, and writes on element to `result` the multiplier by 4 is correct. Why is this the case?
+开启 task 比不开启 task 稍慢。本 case，多 task 后调度开销（上下文切换带来 cache miss，20 M elements' size ~80MB）抵消了多 task 并行带来的 speedup。目前无提升思路（尝试减少 task 数目效果不明显）。
+
+>Note that the total memory bandwidth consumed computation in `main.cpp` is `TOTAL_BYTES = 4 * N * sizeof(float);`. Even though `saxpy` loads one element from X, one element from Y, and writes one element to `result` the multiplier by 4 is correct. Why is this the case?
 
 TODO
 
