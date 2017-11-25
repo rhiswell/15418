@@ -1,4 +1,4 @@
-## Program #1
+## Program #1: Parallel Fractal Generation Using Pthread
 
 ### Intel HT
 
@@ -20,7 +20,7 @@ Machine: Intel Core i7-6700 CPU with hyper-thread on => 8 logical cores
 
 由图，线程数小于 12 时，speedup 随线程数线性增长。当线程数大于 12 时，speedup 趋于 8，即趋于 CPU 的核心数。
 
-## Program #2
+## Program #2: Vectorizing Code Using SIMD Intrinsics
 
 ### Available operations in CMU418intrin.h
 
@@ -148,7 +148,7 @@ Metrics:
 
 向量寄存器的利用率随着其长度递减。
 
-## Program #3
+## Program #3: Parallel Fractal Generation Using ISPC
 
 ###  ISPC
 
@@ -245,6 +245,68 @@ target=avx1-i32x16 下，mandelbort_ispc speedup 为 9.89x，而 mandelbrot_task
 > *The smart-thinking student's question*: Hey wait! Why are there two different mechanisms (`foreach` and `launch`) for expressing independent, parallelizable work to the ISPC system? Couldn't the system just partition the many iterations of `foreach` across all cores and also emit the appropriate SIMD code for the cores?
 
 这里需要考虑不同层次任务的不同划分需求。并行化一个程序需要考虑数据的局部性、并行度等等。若 foreach 中的自动调度算法足够 smart，能够很好的权衡以上需求，那么一个 foreach 挺好的。
+
+## Program #4: Iterative sqrt
+
+### Equations
+
+- S as input, $\frac{1}{x}$ as output, then ${\frac{1}{x^2}}-S=0$
+- Newton's method: ???
+
+### Solutions
+
+> Build and run sqrt. Report the ISPC implementation speedup for single CPU core (no tasks) and when using all cores (with tasks). What is the speedup due to SIMD parallelization? What is the speedup due to multi-core parallelization?
+
+![](./prog4_sqrt/avx1-i32x16_speedup.png)
+
+Speedup 分别为 7.46x 和 46.43x。
+
+> Modify the contents of the array values to improve the relative speedup of the ISPC implementations. Describe a very-good-case input that maximizes speedup over the sequential version and report the resulting speedup achieved (for both the with- and without-tasks ISPC implementations). Does your modification improve SIMD speedup? Does it improve multi-core speedup (i.e., the benefit of moving from ISPC without- tasks to ISPC with tasks)? Please explain why.
+
+- baseline_random_sorted: values[i] = random_num && sort(values)
+
+![](./prog4_sqrt/result_sorted_random.png)
+
+- baseline_all_2.999f: values[i] = 3.0f - .001f
+
+![](./prog4_sqrt/result_all_max.png)
+
+- baseline_all_1.000f: values[i] = 1.0f
+
+![](./prog4_sqrt/result_all_ones.png)
+
+- baseline_all_2.999f 即所谓的 very-good-case。ISPC 和 ISPC with task 分别带来 23.43x 和 142.69x 的 speedup。本 case 中，每个 input 的迭代次数都最大化，向量化后向量中的元素步调一致，此时向量单元利用率最大化，则我们可以获得最大的加速比。
+
+> Construct a very-bad-case input for `sqrt` that minimizes speedup for ISPC with no tasks. Describe this input, describe why you chose it, and report the resulting relative performance of the ISPC implementations. What is the reason for the loss in efficiency? **(keep in mind we are using the --target=sse4 option for ISPC, which generates 4-wide SIMD instructions)**.
+
+本次实验 target 为 avx1-i32-16，即 8-wide SIMD instructions，gang size 为 16。设向量 X = [x0, x1, ..., x7]，指定任意 xi 为迭代次数最大化的 input，其它为迭代次数最小的 input，则有所谓的 very-bad-case。但本此实验中，gang size 为 16，即一次调度 issue 两个向量，则我们设置 input 数组中每 16 个有一个需要最大的迭代次数，其它就最小。最后，ISPC 和 ISPC with task 分别带来 1.75x 和 10.69x 的加速比。原因同 program#3 solution#1。我们还发现，本 case ISPC with task 的加速比（10.69x）大于上面 baseline_all_1.000f case 中的加速比（6.70x）。由此得出一个简单的结论，比起单 task，多 task 并行对于特定任务可以带来更高的加速比。再一个结论，对于那些计算量较小的任务，相比任务级并行化，SIMD 并行化可以带来更高的加速比。
+
+![](./prog4_sqrt/result_bad_input.png)
+
+> Write your own version of the `sqrt` function manually using AVX intrinsics. To get credit your implementation should be nearly as fast (or faster) than the binary produced using ISPC when its compile flag is set to emit AVX (`--target=avx2-i32x8`). You may find the [Intel Intrinsics Guide](http://software.intel.com/en-us/articles/intel-intrinsics-guide) very helpful.
+
+实现见 sqrt_avx.cpp。结果如下图。
+
+![](./prog4_sqrt/result_raw_avx.png)
+
+实现的时候偷了个懒，直接使用 AVX 的`__m256 _mm256_sqrt_ps(__m256 a)`对向量进行 sqrt。这里列出几个坑：
+
+- 编译时需要添加 -mavx 才可使用 AVX 指令集；
+- AVX 访存时需要内存地址以 32B 对齐，`aligned_alloc()`可分配首地址按要求对齐的内存。
+
+## Program #5
+
+> Compile and run saxpy. The program will report the performance of ISPC (without tasks) and ISPC (with tasks) implementations of saxpy. What speedup from using ISPC with tasks do you observe? Explain the performance of this program. Do you think it can be improved?
+
+TODO
+
+>Note that the total memory bandwidth consumed computation in `main.cpp` is `TOTAL_BYTES = 4 * N * sizeof(float);`. Even though `saxpy` loads one element from X, one element from Y, and writes on element to `result` the multiplier by 4 is correct. Why is this the case?
+
+TODO
+
+> Improve the performance of `saxpy`. We're looking for a significant speedup here, not just a few percentage points. If successful, describe how you did it and what a best-possible implementation on these systems might achieve.
+
+TODO
 
 ## Appendix
 

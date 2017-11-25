@@ -1,8 +1,7 @@
 CXX=g++ -m64
-CXXFLAGS=-I../common -Iobjs/ -O3 -Wall
+CXXFLAGS=-I../common -Iobjs/ -O3 -Wall -mavx
 ISPC=ispc
-# note: change target to avx for AVX capable machines
-ISPCFLAGS=-O2 --target=sse4 --arch=x86-64
+ISPCFLAGS=-O2 --target=avx1-i32x16 --arch=x86-64 --pic
 
 APP_NAME=sqrt
 OBJDIR=objs
@@ -25,7 +24,7 @@ dirs:
 clean:
 		/bin/rm -rf $(OBJDIR) *.ppm *~ $(APP_NAME)
 
-OBJS=$(OBJDIR)/main.o $(OBJDIR)/sqrtSerial.o $(OBJDIR)/sqrt_ispc.o $(PPM_OBJ) $(TASKSYS_OBJ)
+OBJS=$(OBJDIR)/main.o $(OBJDIR)/sqrtSerial.o $(OBJDIR)/sqrt_avx.o $(OBJDIR)/sqrt_ispc.o $(PPM_OBJ) $(TASKSYS_OBJ)
 
 $(APP_NAME): dirs $(OBJS)
 		$(CXX) $(CXXFLAGS) -o $@ $(OBJS) -lm $(TASKSYS_LIB)
