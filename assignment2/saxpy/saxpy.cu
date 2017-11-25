@@ -33,39 +33,47 @@ saxpyCuda(int N, float alpha, float* xarray, float* yarray, float* resultarray) 
     float* device_result;
 
     //
-    // TODO: allocate device memory buffers on the GPU using
+    // DONE: allocate device memory buffers on the GPU using
     // cudaMalloc.  The started code issues warnings on build because
     // these buffers are used in the call to saxpy_kernel below
     // without being initialized.
     //
+    int arraySize = N * sizeof(float);
+    cudaMalloc(&device_x, arraySize);
+    cudaMalloc(&device_y, arraySize);
+    cudaMalloc(&device_result, arraySize);
 
     // start timing after allocation of device memory.
     double startTime = CycleTimer::currentSeconds();
 
     //
-    // TODO: copy input arrays to the GPU using cudaMemcpy
+    // DONE: copy input arrays to the GPU using cudaMemcpy
     //
+    cudaMemcpy(device_x, xarray, arraySize, cudaMemcpyHostToDevice);
+    cudaMemcpy(device_y, yarray, arraySize, cudaMemcpyHostToDevice);
 
     //
-    // TODO: insert time here to begin timing only the kernel
+    // DONE: insert time here to begin timing only the kernel
     //
+    double kernelStartTime = CycleTimer::currentSeconds();
 
     // run saxpy_kernel on the GPU
     saxpy_kernel<<<blocks, threadsPerBlock>>>(N, alpha, device_x, device_y, device_result);
 
     //
-    // TODO: insert timer here to time only the kernel.  Since the
+    // DONE: insert timer here to time only the kernel.  Since the
     // kernel will run asynchronously with the calling CPU thread, you
     // need to call cudaThreadSynchronize() before your timer to
     // ensure the kernel running on the GPU has completed.  (Otherwise
     // you will incorrectly observe that almost no time elapses!)
     //
-    //cudaThreadSynchronize();
-
+    cudaThreadSynchronize();
+    double kernelEndTime = CycleTimer::currentSeconds();
 
     //
-    // TODO: copy result from GPU using cudaMemcpy
+    // DONE: copy result from GPU using cudaMemcpy
     //
+    cudaMemcpy(resultarray, device_result, arraySize, cudaMemcpyDeviceToHost);
 
     // end timing after result has been copied back into host memory.
     // The time elapsed between startTime and endTime is the total
@@ -81,9 +89,15 @@ saxpyCuda(int N, float alpha, float* xarray, float* yarray, float* resultarray) 
     double overallDuration = endTime - startTime;
     printf("Overall time: %.3f ms\t\t[%.3f GB/s]\n", 1000.f * overallDuration, toBW(totalBytes, overallDuration));
 
+    double kernelExDuration = kernelEndTime - kernelStartTime;
+    printf("Kernel time: %.3f ms\n", 1000.f * kernelExDuration);
+
     //
-    // TODO free memory buffers on the GPU
+    // DONE free memory buffers on the GPU
     //
+    cudaFree(device_x);
+    cudaFree(device_y);
+    cudaFree(device_result);
 }
 
 void
