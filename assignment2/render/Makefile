@@ -24,13 +24,7 @@ FRAMEWORKS :=
 NVCCFLAGS=-O3 -m64 --gpu-architecture compute_35
 LIBS += GL glut cudart
 
-ifneq ($(wildcard /opt/cuda-8.0/.*),)
-# Latedays
-LDFLAGS=-L/opt/cuda-8.0/lib64/ -lcudart
-else
-# GHC
-LDFLAGS=-L/usr/local/depot/cuda-8.0/lib64/ -lcudart
-endif
+LDFLAGS=-L/usr/local/cuda-8.0/lib64/ -lcudart
 
 LDLIBS  := $(addprefix -l, $(LIBS))
 LDFRAMEWORKS := $(addprefix -framework , $(FRAMEWORKS))
