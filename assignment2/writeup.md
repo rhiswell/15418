@@ -1,4 +1,4 @@
-## Program #1 SAXPY
+## Program #1: CUDA Warm-Up 1: SAXPY
 
 ### Solutions
 
@@ -11,3 +11,19 @@ Machine: Intel Xeon CPU E5-2698 x32 with hyper-thread enabled => 64 cores && 128
 ![](./saxpy/merged_run_time.png)
 
 由 [K80 board specification](https://images.nvidia.com/content/pdf/kepler/Tesla-K80-BoardSpec-07317-001-v05.pdf) 可知，其 memory 理论带宽上限为 240GB/s（per GPU）。K80 通过 PCIe Gen3x16 和 Host 相连，而 PCIe Gen3x16 理论带宽上限为 32GB/s（双向）。本 case 中 CPU 和 GPU 间传输带宽约为 7GB/s。
+
+## Program #2: CUDA Warm-Up 2: Parallel Prefix-Sum
+
+### Solutions
+
+> Exclusive Prefix Sum
+
+The algorithm refers to [Kayvon's notes on exclusive scan](http://15418.courses.cs.cmu.edu/spring2016/lecture/exclusivescan).
+
+![](./scan/result_check_scan.png)
+
+> Implementing "Find Repeats" Using Prefix Sum
+
+![](./scan/result_check_find_repeats.png)
+
+被 --thrust 完虐。

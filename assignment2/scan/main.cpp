@@ -6,7 +6,7 @@
 
 #include "CycleTimer.h"
 
-double cudaFindRepeats(int *input, int length, int *output, int *output_length); 
+double cudaFindRepeats(int *input, int length, int *output, int *output_length);
 double cudaScan(int* start, int* end, int* resultarray);
 double cudaScanThrust(int* start, int* end, int* resultarray);
 void printCudaInfo();
@@ -15,7 +15,7 @@ void printCudaInfo();
 void usage(const char* progname) {
     printf("Usage: %s [options]\n", progname);
     printf("Program Options:\n");
-    printf("  -m  --test <TYPE>      Run specified function on input.  Valid tests are: scan, find_repeats\n"); 
+    printf("  -m  --test <TYPE>      Run specified function on input.  Valid tests are: scan, find_repeats\n");
     printf("  -i  --input <NAME>     Run test on given input type. Valid inputs  are: test1, random\n");
     printf("  -n  --arraysize <INT>  Number of elements in arrays\n");
     printf("  -t  --thrust           Use Thrust library implementation\n");
@@ -63,13 +63,13 @@ void cpu_exclusive_scan(int* start, int* end, int* output)
 
 int cpu_find_repeats(int *start, int length, int *output){
     int count = 0, idx = 0;
-    while(idx < length - 1){ 
+    while(idx < length - 1){
         if(start[idx] == start[idx + 1]){
             output[count] = idx;
             count++;
-        }   
+        }
         idx++;
-    }   
+    }
     return count;
 }
 
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 {
     int N = 64;
     bool useThrust = false;
-    std::string test; 
+    std::string test;
     std::string input;
 
     // parse commandline options ////////////////////////////////////////////
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
     while ((opt = getopt_long(argc, argv, "m:n:i:?t", long_options, NULL)) != EOF) {
         switch (opt) {
         case 'm':
-            test = optarg; 
+            test = optarg;
             break;
         case 'n':
             N = atoi(optarg);
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
         for(int i = 0; i < N; i++) {
             inarray[i] = 1;
             checkarray[i] = 1;
-        }  
+        }
     }
 
     printCudaInfo();
@@ -152,11 +152,11 @@ int main(int argc, char** argv)
         // run CPU implementation to check correctness
         cpu_exclusive_scan(inarray, inarray+N, checkarray);
 
-        if (useThrust) { 
+        if (useThrust) {
             printf("Thrust GPU time: %.3f ms\n", 1000.f * cudaTime);
-        } else {    
+        } else {
             printf("GPU_time: %.3f ms\n", 1000.f * cudaTime);
-        } 
+        }
 
         // validate results
         for (int i = 0; i < N; i++)
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
         }
         printf("Scan outputs are correct!\n");
     } else if (test.compare("find_repeats") == 0) { // Test find_repeats
-        
+
         // run CUDA implementation
         int cu_size;
         for (int i=0; i<3; i++) {
@@ -180,7 +180,7 @@ int main(int argc, char** argv)
                             cudaFindRepeats(inarray, N, resultarray, &cu_size));
         }
 
-        // run CPU implementation to check correctness 
+        // run CPU implementation to check correctness
         int serial_size = cpu_find_repeats(inarray, N, checkarray);
 
         printf("GPU_time: %.3f ms\n", 1000.f * cudaTime);
@@ -206,9 +206,9 @@ int main(int argc, char** argv)
         }
         printf("Find_repeats outputs are correct!\n");
 
-    } else { 
-        usage(argv[0]); 
-        exit(1); 
+    } else {
+        usage(argv[0]);
+        exit(1);
     }
     delete[] inarray;
     delete[] resultarray;
